@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+     PUBLIC "-//mybatis.org//DTDMapper3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+    <mapper namespace="com.example.demo.mapper.SentimentalMapper">
+
+        <select id="sentimentalReview" resultType="com.example.demo.vo.SentimentalVO">
+            select* from product_review_sentimental
+            where nv_mid = #{nv_mid}
+        </select>
+
+        
+        <select id="sentimentalReviewSentence" resultType="com.example.demo.vo.SentimentalVO">
+            select * from product_review_sentimental
+            where review_id= #{review_id}
+        </select>
+    
+        <resultMap id="sentimentalMap" type="com.example.demo.vo.SentimentalReviewVO">		
+	            <result property="avg_senti_score"		column="avg(senti_score)"/>
+	            <result property="avg_quality_score"	column="avg(quality_score)"/>
+	            <result property="keywordGroup"	        column="group_concat(distinct key_id)"/>
+	            <result property="total_sentence"	    column="group_concat(sentence order by sentence_number SEPARATOR '')"/>
+	            <result property="count_review_id"  	column="count(review_id)"/>
+	            <result property="count_key_id"	        column="count(distinct key_id)"/>
+        </resultMap>
+
+         <select id="sentimental" resultMap="sentimentalMap">
+            select nv_mid, review_id, group_concat(distinct key_id), group_concat(sentence order by sentence_number SEPARATOR ''), avg(senti_score), avg(quality_score) , count(review_id), count(distinct key_id) 
+            from product_review_sentimental
+            where nv_mid = #{nv_mid}
+            group by review_id
+            having (count(review_id)>=3 and count(distinct key_id)>=3)
+            order by avg(senti_score) DESC
+        </select>
+
+    </mapper>
